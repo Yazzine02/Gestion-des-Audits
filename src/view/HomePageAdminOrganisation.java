@@ -72,18 +72,27 @@ public class HomePageAdminOrganisation extends JFrame implements ActionListener 
         navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.Y_AXIS));
         navigationPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // Create an array of button texts for easy iteration
-        String[] buttonTexts = {
-                "Organisation", "Site", "Processus", "Standards",
-                "Clauses", "Systeme de Management", "Profile"
-        };
-
-        // Create buttons with consistent styling
-        for (String buttonText : buttonTexts) {
-            JButton button = createStyledButton(buttonText);
-            navigationPanel.add(button);
-            navigationPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add vertical spacing
-        }
+        organisationButton = createStyledButton("Organisation");
+        navigationPanel.add(organisationButton);
+        navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        siteButton = createStyledButton("Site");
+        navigationPanel.add(siteButton);
+        navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        processusButton = createStyledButton("Processus");
+        navigationPanel.add(processusButton);
+        navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        standardsButton = createStyledButton("Standards");
+        navigationPanel.add(standardsButton);
+        navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        clausesButton = createStyledButton("Clauses");
+        navigationPanel.add(clausesButton);
+        navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        systemeDeManagementButton = createStyledButton("Systeme De-Management");
+        navigationPanel.add(systemeDeManagementButton);
+        navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        profileButton = createStyledButton("Profile");
+        navigationPanel.add(profileButton);
+        navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         // Assemble sidebar
         dashboardPanel.add(logoPanel, BorderLayout.NORTH);
@@ -142,11 +151,22 @@ public class HomePageAdminOrganisation extends JFrame implements ActionListener 
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        // Placeholder for button actions
-        JButton sourceButton = (JButton) e.getSource();
-        JOptionPane.showMessageDialog(this,
-                sourceButton.getText() + " button clicked!",
-                "Button Action",
-                JOptionPane.INFORMATION_MESSAGE);
+        if(e.getSource()==organisationButton) {
+            // Close window
+            this.dispose();
+            // open new window
+            SwingUtilities.invokeLater(()->{
+                try{
+                    // Make the system lookandfeel stay consistent throughout the app
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    // Create and show dashboard
+                    OrganisationAdminOrganisation dashboard = new OrganisationAdminOrganisation();
+                    dashboard.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening organisation: "+ex.getMessage());
+                }
+            });
+        }
     }
 }
