@@ -6,10 +6,12 @@ import model.Organisation;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class OrganisationAdminOrganisation extends JFrame implements ActionListener {
@@ -25,6 +27,11 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
     private JButton clausesButton;
     private JButton systemeDeManagementButton;
     private JButton profileButton;
+    // Table
+    private JTable table;
+    private DefaultTableModel tableModel;
+    // Data field
+    private List<Organisation> organisations;
     // Color Palette
     private final Color PRIMARY_COLOR = new Color(33, 150, 243); // Modern Blue
     private final Color SECONDARY_COLOR = new Color(63, 81, 181); // Deep Blue
@@ -157,35 +164,170 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         String[] columnNames = {"ID", "Name", "Address","Actions"};
 
         // Get organisations
-        List<Organisation> organisations = OrganisationController.getAllOrganisations();
+        organisations = OrganisationController.getAllOrganisations();
 
-        // Create 2D array for table data
-        Object[][] data = new Object[organisations.size()][3];
-        for (int i = 0; i < organisations.size(); i++) {
-            Organisation org = organisations.get(i);
-            data[i][0] = org.getId();
-            data[i][1] = org.getName();
-            data[i][2] = org.getAddress();
+        // Make the table non-editable
+        tableModel = new DefaultTableModel(columnNames, 0){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        // Populate the table directly
+        for(Organisation org : organisations){
+            tableModel.addRow(new Object[]{
+                    org.getId(),
+                    org.getName(),
+                    org.getAddress(),
+                    "Actions"
+            });
         }
 
-        // Create table model
-        DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
+        // Initialize JTable with the table model
+        table = new JTable(tableModel);
+        // Set up the Actions column with buttons
+        // We will create custom buttons using the ButtonRenderer class
+        table.getColumnModel().getColumn(3).setCellRenderer(new ButtonRenderer());
+        // Adding mouse listeners
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int column = table.getColumnModel().getColumnIndexAtX(e.getX());
+                int row = e.getY() / table.getRowHeight();
 
-        // Create JTable with the table model
-        JTable table = new JTable(tableModel);
+                if (row < table.getRowCount() && row >= 0 && column == 3) {
+                    // Get click coordinates inside the cell
+                    int buttonWidth = 60;
+                    int padding = 5;
+                    int firstButtonX = (table.getColumnModel().getColumn(column).getWidth() - (2 * buttonWidth + padding)) / 2;
 
+                    // Calculate if Edit or Delete button was clicked
+                    int relativeX = e.getX() - table.getColumnModel().getColumn(column).getWidth() * 3; // Adjust for previous columns
+
+                    Organisation selectedOrg = organisations.get(row);
+                    if (relativeX > firstButtonX && relativeX < firstButtonX + buttonWidth) {
+                        modifyOrganisation(selectedOrg, row);
+                    } else if (relativeX > firstButtonX + buttonWidth + padding) {
+                        deleteOrganisation(selectedOrg);
+                    }
+                }
+            }
+        });
         // Add table to a scroll pane to enable scrolling
         JScrollPane scrollPane = new JScrollPane(table);
-
-        // Replace the welcome label with the table
+        // Add the Add button and the table
+        mainPanel.add(addButton, BorderLayout.NORTH);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
         add(mainPanel, BorderLayout.CENTER);
+    }
+    // Custom Button class for the Actions column of the table
+    class ButtonRenderer extends JPanel implements TableCellRenderer {
+        public ButtonRenderer() {
+            setLayout(new FlowLayout(FlowLayout.CENTER, 5, 2));
+        }
 
-        // Debug print
-        System.out.println("Table row count: " + tableModel.getRowCount());
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+            removeAll();
+
+            JButton editBtn = new JButton("Edit");
+            JButton deleteBtn = new JButton("Delete");
+
+            editBtn.setBackground(PRIMARY_COLOR);
+            editBtn.setForeground(TEXT_COLOR);
+            deleteBtn.setBackground(Color.RED);
+            deleteBtn.setForeground(TEXT_COLOR);
+
+            add(editBtn);
+            add(deleteBtn);
+
+            return this;
+        }
+    }
+
+    // Modify an organisation method
+    private void modifyOrganisation(Organisation org, int row){
+        // Create custom dialog
+        JDialog dialog = new JDialog(this, "Edit Organisation", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        dialog.setSize(400, 200);
+        dialog.setLocationRelativeTo(this);
+
+        // Create form panel
+        JPanel formPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Add form fields
+        JLabel nameLabel = new JLabel("Name:");
+        JTextField nameField = new JTextField(org.getName());
+        JLabel addressLabel = new JLabel("Address:");
+        JTextField addressField = new JTextField(org.getAddress());
+
+        formPanel.add(nameLabel);
+        formPanel.add(nameField);
+        formPanel.add(addressLabel);
+        formPanel.add(addressField);
+
+        // Create button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton confirmButton = new JButton("Confirm");
+        JButton cancelButton = new JButton("Cancel");
+
+        confirmButton.setBackground(PRIMARY_COLOR);
+        confirmButton.setForeground(TEXT_COLOR);
+
+        // Add action listeners
+        confirmButton.addActionListener(e -> {
+            String newName = nameField.getText().trim();
+            String newAddress = addressField.getText().trim();
+
+            if (newName.isEmpty() || newAddress.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog,
+                        "Name and address cannot be empty",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Update organisation
+            org.setName(newName);
+            org.setAddress(newAddress);
+            OrganisationController.updateOrganisation(org.getId(), org.getName(), org.getAddress());
+
+            // Update table
+            tableModel.setValueAt(newName, row, 1);
+            tableModel.setValueAt(newAddress, row, 2);
+
+            dialog.dispose();
+        });
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        buttonPanel.add(confirmButton);
+        buttonPanel.add(cancelButton);
+
+        // Add panels to dialog
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+    // Remove an organisation method
+    private void deleteOrganisation(Organisation org){
+        // JOptionPan.YES_NO_OPTION is an integer
+        int confirm = JOptionPane.showConfirmDialog(this,"Are you sure you want to delete "+org.getName()+"?","Confirm",JOptionPane.YES_NO_OPTION);
+        if(confirm == JOptionPane.YES_OPTION) {
+            // Remove using the controller
+            OrganisationController.deleteOrganisation(org.getId());
+            tableModel.removeRow(organisations.indexOf(org));
+            organisations.remove(org);
+        }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+
     }
 }
