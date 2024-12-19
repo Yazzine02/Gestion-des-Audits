@@ -1,10 +1,16 @@
 package view;
 
+import controller.OrganisationController;
+import model.Organisation;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrganisationAdminOrganisation extends JFrame implements ActionListener {
     // Panels
@@ -137,12 +143,46 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         mainPanel.setBackground(BACKGROUND_COLOR);
         mainPanel.setLayout(new BorderLayout());
 
-        JLabel welcomeLabel = new JLabel("Insert content here", SwingConstants.CENTER);
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 28));
-        welcomeLabel.setForeground(new Color(33, 33, 33));
+        JButton addButton = new JButton("Add Organisation");
+        addButton.setBackground(PRIMARY_COLOR);
+        addButton.setForeground(TEXT_COLOR);
+        addButton.setFont(new Font("Arial", Font.BOLD, 14));
+        addButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        addButton.setMinimumSize(new Dimension(200, 45));
+        addButton.setPreferredSize(new Dimension(200, 45));
+        addButton.setFocusPainted(false);
+        addButton.setBorderPainted(false);
 
-        mainPanel.add(welcomeLabel, BorderLayout.CENTER);
+        // Column names
+        String[] columnNames = {"ID", "Name", "Address","Actions"};
+
+        // Get organisations
+        List<Organisation> organisations = OrganisationController.getAllOrganisations();
+
+        // Create 2D array for table data
+        Object[][] data = new Object[organisations.size()][3];
+        for (int i = 0; i < organisations.size(); i++) {
+            Organisation org = organisations.get(i);
+            data[i][0] = org.getId();
+            data[i][1] = org.getName();
+            data[i][2] = org.getAddress();
+        }
+
+        // Create table model
+        DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
+
+        // Create JTable with the table model
+        JTable table = new JTable(tableModel);
+
+        // Add table to a scroll pane to enable scrolling
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        // Replace the welcome label with the table
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
         add(mainPanel, BorderLayout.CENTER);
+
+        // Debug print
+        System.out.println("Table row count: " + tableModel.getRowCount());
     }
 
     @Override
