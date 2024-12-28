@@ -1,7 +1,8 @@
 package view;
 
 import controller.OrganisationController;
-import model.Organisation;
+import controller.SiteController;
+import model.Site;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -14,7 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
-public class OrganisationAdminOrganisation extends JFrame implements ActionListener {
+public class SiteAdminOrganisation extends JFrame implements ActionListener {
     // Panels
     private JPanel mainPanel;
     private JPanel dashboardPanel;
@@ -34,7 +35,7 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
     private JTable table;
     private DefaultTableModel tableModel;
     // Data field
-    private List<Organisation> organisations;
+    private List<Site> sites;
     // Color Palette
     private final Color PRIMARY_COLOR = new Color(33, 150, 243); // Modern Blue
     private final Color SECONDARY_COLOR = new Color(63, 81, 181); // Deep Blue
@@ -42,8 +43,8 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
     private final Color TEXT_COLOR = Color.WHITE;
     private final Color ADD_BUTTON = new Color(15,150,43);
 
-    public OrganisationAdminOrganisation() {
-        setTitle("Organisation Admin Organisation");
+    public SiteAdminOrganisation() {
+        setTitle("Site Admin Organisation");
         setSize(1200, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -167,7 +168,7 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.setBackground(BACKGROUND_COLOR);
         // The add button
-        JButton addButton = new JButton("Add Organisation");
+        JButton addButton = new JButton("Add Site");
         addButton.setBackground(ADD_BUTTON);
         addButton.setForeground(TEXT_COLOR);
         addButton.setFont(new Font("Arial", Font.BOLD, 14));
@@ -184,16 +185,16 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
             }
         });
         // Add action listen to add method
-        addButton.addActionListener(e -> addOrganisation());
+        addButton.addActionListener(e -> addSite());
         buttonPanel.add(addButton);
         // Add the button panel to the NORTH of the main panel
         mainPanel.add(buttonPanel, BorderLayout.NORTH);
 
         // Column names
-        String[] columnNames = {"Name", "Address","Actions"};
+        String[] columnNames = {"Adresse", "Description","Name","Actions"};
 
         // Get organisations
-        organisations = OrganisationController.getAllOrganisations();
+        sites = SiteController.getSites();
 
         // Make the table non-editable
         tableModel = new DefaultTableModel(columnNames, 0){
@@ -205,11 +206,12 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         // Initialize JTable with the table model
         table = new JTable(tableModel);
         // Populate the table directly
-        if(!organisations.isEmpty()){
-            for(Organisation org : organisations){
+        if(!sites.isEmpty()){
+            for(Site site : sites){
                 tableModel.addRow(new Object[]{
-                        org.getName(),
-                        org.getAddress(),
+                        site.getAdresse(),
+                        site.getDescription(),
+                        site.getName(),
                         "Actions"
                 });
             }
@@ -218,7 +220,7 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         table.setRowHeight(50);
         // Set up the Actions column with buttons
         // We will create custom buttons using the ButtonRenderer class
-        table.getColumnModel().getColumn(2).setCellRenderer(new ButtonRenderer());
+        table.getColumnModel().getColumn(3).setCellRenderer(new SiteAdminOrganisation.ButtonRenderer());
         // Adding mouse listeners
         table.addMouseListener(new MouseAdapter() {
             @Override
@@ -226,20 +228,20 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
                 int column = table.getColumnModel().getColumnIndexAtX(e.getX());
                 int row = e.getY() / table.getRowHeight();
 
-                if (row < table.getRowCount() && row >= 0 && column == 2) {
+                if (row < table.getRowCount() && row >= 0 && column == 3) {
                     // Get click coordinates inside the cell
                     int buttonWidth = 60;
                     int padding = 5;
                     int firstButtonX = (table.getColumnModel().getColumn(column).getWidth() - (2 * buttonWidth + padding)) / 2;
 
                     // Calculate if Edit or Delete button was clicked
-                    int relativeX = e.getX() - table.getColumnModel().getColumn(column).getWidth() * 2; // Adjust for previous columns
+                    int relativeX = e.getX() - table.getColumnModel().getColumn(column).getWidth() * 3; // Adjust for previous columns
 
-                    Organisation selectedOrg = organisations.get(row);
+                    Site selectedSite = sites.get(row);
                     if (relativeX > firstButtonX && relativeX < firstButtonX + buttonWidth) {
-                        modifyOrganisation(selectedOrg, row);
+                        modifySite(selectedSite, row);
                     } else if (relativeX > firstButtonX + buttonWidth + padding) {
-                        deleteOrganisation(selectedOrg);
+                        deleteSite(selectedSite);
                     }
                 }
             }
@@ -275,12 +277,12 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
             return this;
         }
     }
-    // Add organisation method that extends to add site
-    private void addOrganisation() {
+    // Add method
+    void addSite() {
         // Create custom dialog
-        JDialog dialog = new JDialog(this, "Add Organisation", true);
+        JDialog dialog = new JDialog(this, "Add Site", true);
         dialog.setLayout(new BorderLayout(10, 10));
-        dialog.setSize(400, 250); // Slightly taller to accommodate the additional button
+        dialog.setSize(400, 200);
         dialog.setLocationRelativeTo(this);
 
         // Create form panel
@@ -288,79 +290,54 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Add form fields
+        JLabel adresseLabel = new JLabel("Adresse:");
+        JTextField adresseField = new JTextField();
+        JLabel descriptionLabel = new JLabel("Description");
+        JTextField descriptionField = new JTextField();
         JLabel nameLabel = new JLabel("Name:");
         JTextField nameField = new JTextField();
-        JLabel addressLabel = new JLabel("Address:");
-        JTextField addressField = new JTextField();
 
-        formPanel.add(nameLabel);
+        formPanel.add(adresseField);
+        formPanel.add(adresseLabel);
+        formPanel.add(descriptionField);
+        formPanel.add(descriptionLabel);
         formPanel.add(nameField);
-        formPanel.add(addressLabel);
-        formPanel.add(addressField);
+        formPanel.add(nameLabel);
 
         // Create button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton confirmButton = new JButton("Confirm");
         JButton cancelButton = new JButton("Cancel");
-        JButton addSiteButton = new JButton("Add Site"); // New button for site creation
-        JButton addProcessusButton = new JButton("Add Processus"); // New button for processus creation
 
         confirmButton.setBackground(PRIMARY_COLOR);
         confirmButton.setForeground(TEXT_COLOR);
-        addSiteButton.setBackground(ADD_BUTTON);
-        addSiteButton.setForeground(TEXT_COLOR);
-        addProcessusButton.setBackground(ADD_BUTTON);
-        addProcessusButton.setForeground(TEXT_COLOR);
-
-        // Variable to store the created organisation
-        final Organisation[] createdOrganisation = new Organisation[1];
 
         // Add action listeners
         confirmButton.addActionListener(e -> {
             String newName = nameField.getText().trim();
-            String newAddress = addressField.getText().trim();
+            String newAdresse = adresseField.getText().trim();
+            String newDescription = descriptionField.getText().trim();
 
-            if (newName.isEmpty() || newAddress.isEmpty()) {
+            if (newName.isEmpty() || newAdresse.isEmpty() || newDescription.isEmpty()) {
                 JOptionPane.showMessageDialog(dialog,
-                        "Name and address cannot be empty",
+                        "Name, address, description cannot be empty",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // Adding organisation
-            Organisation organisation = new Organisation(newName, newAddress);
-            OrganisationController.addOrganisation(organisation);
+            // Adding site
+            Site site = new Site(newAdresse, newDescription, newName);
+            SiteController.addSite(site);
 
-            organisations.add(organisation);
-            tableModel.addRow(new Object[]{organisation.getId(), organisation.getName(), organisation.getAddress(), "Actions"});
+            sites.add(site);
+            tableModel.addRow(new Object[]{site.getId(),site.getAdresse(),site.getDescription(), site.getName(), "Actions"});
 
-            // Store the created organisation for potential site creation
-            createdOrganisation[0] = organisation;
-
-            // Show success message
-            JOptionPane.showMessageDialog(dialog,
-                    "Organisation created successfully! You can add a site or a processus if needed.",
-                    "Success",
-                    JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        addSiteButton.addActionListener(e -> {
-            // Open the site creation window from SiteAdminOrganisation
-            SiteAdminOrganisation siteAdmin = new SiteAdminOrganisation();
-            siteAdmin.addSite();
-        });
-
-        addProcessusButton.addActionListener(e->{
-            // Open the processus creation window
-            ProcessusAdminOrganisation processusAdmin = new ProcessusAdminOrganisation();
-            processusAdmin.addProcessus();
+            dialog.dispose();
         });
 
         cancelButton.addActionListener(e -> dialog.dispose());
 
-        buttonPanel.add(addSiteButton);
-        buttonPanel.add(addProcessusButton);
         buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
 
@@ -372,9 +349,9 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
     }
 
     // Modify method
-    private void modifyOrganisation(Organisation org, int row){
+    private void modifySite(Site site, int row){
         // Create custom dialog
-        JDialog dialog = new JDialog(this, "Edit Organisation", true);
+        JDialog dialog = new JDialog(this, "Edit Site", true);
         dialog.setLayout(new BorderLayout(10, 10));
         dialog.setSize(400, 200);
         dialog.setLocationRelativeTo(this);
@@ -384,15 +361,19 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Add form fields
+        JLabel adresseLabel = new JLabel("Adresse:");
+        JTextField adresseField = new JTextField(site.getAdresse());
+        JLabel descriptionLabel = new JLabel("Description");
+        JTextField descriptionField = new JTextField(site.getDescription());
         JLabel nameLabel = new JLabel("Name:");
-        JTextField nameField = new JTextField(org.getName());
-        JLabel addressLabel = new JLabel("Address:");
-        JTextField addressField = new JTextField(org.getAddress());
+        JTextField nameField = new JTextField(site.getName());
 
+        formPanel.add(adresseLabel);
+        formPanel.add(adresseField);
+        formPanel.add(descriptionLabel);
+        formPanel.add(descriptionField);
         formPanel.add(nameLabel);
         formPanel.add(nameField);
-        formPanel.add(addressLabel);
-        formPanel.add(addressField);
 
         // Create button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -405,20 +386,22 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         // Add action listeners
         confirmButton.addActionListener(e -> {
             String newName = nameField.getText().trim();
-            String newAddress = addressField.getText().trim();
+            String newAddress = adresseField.getText().trim();
+            String newDescription = descriptionField.getText().trim();
 
-            if (newName.isEmpty() || newAddress.isEmpty()) {
+            if (newName.isEmpty() || newAddress.isEmpty() || newDescription.isEmpty()) {
                 JOptionPane.showMessageDialog(dialog,
-                        "Name and address cannot be empty",
+                        "Name, adresse and description cannot be empty",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             // Update organisation
-            org.setName(newName);
-            org.setAddress(newAddress);
-            OrganisationController.updateOrganisation(org.getId(), org.getName(), org.getAddress());
+            site.setAdresse(newAddress);
+            site.setName(newName);
+            site.setDescription(newDescription);
+            SiteController.updateSite(site.getId(),site.getAdresse(),site.getDescription(),site.getName());
 
             // Update table
             tableModel.setValueAt(newName, row, 1);
@@ -439,14 +422,14 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         dialog.setVisible(true);
     }
     // Remove method
-    private void deleteOrganisation(Organisation org){
+    private void deleteSite(Site site){
         // JOptionPan.YES_NO_OPTION is an integer
-        int confirm = JOptionPane.showConfirmDialog(this,"Are you sure you want to delete "+org.getName()+"?","Confirm",JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this,"Are you sure you want to delete "+site.getName()+"?","Confirm",JOptionPane.YES_NO_OPTION);
         if(confirm == JOptionPane.YES_OPTION) {
             // Remove using the controller
-            OrganisationController.deleteOrganisation(org.getId());
-            tableModel.removeRow(organisations.indexOf(org));
-            organisations.remove(org);
+            OrganisationController.deleteOrganisation(site.getId());
+            tableModel.removeRow(sites.indexOf(site));
+            sites.remove(site);
         }
     }
 

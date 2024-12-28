@@ -19,6 +19,9 @@ public class HomePageAdminOrganisation extends JFrame implements ActionListener 
     private JButton standardsButton;
     private JButton clausesButton;
     private JButton systemeDeManagementButton;
+    private JButton actionButton;
+    private JButton correctionButton;
+    private JButton auditButton;
     private JButton profileButton;
 
     // Color Palette
@@ -93,6 +96,15 @@ public class HomePageAdminOrganisation extends JFrame implements ActionListener 
         profileButton = createStyledButton("Profile");
         navigationPanel.add(profileButton);
         navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        actionButton = createStyledButton("Action");
+        navigationPanel.add(actionButton);
+        navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        correctionButton = createStyledButton("Correction");
+        navigationPanel.add(correctionButton);
+        navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        auditButton = createStyledButton("Audit");
+        navigationPanel.add(auditButton);
+        navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         // Assemble sidebar
         dashboardPanel.add(logoPanel, BorderLayout.NORTH);
@@ -165,6 +177,71 @@ public class HomePageAdminOrganisation extends JFrame implements ActionListener 
                 }catch(Exception ex){
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Error opening organisation: "+ex.getMessage());
+                }
+            });
+        }
+        else if (e.getSource()==siteButton) {
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    SiteAdminOrganisation dashboard = new SiteAdminOrganisation();
+                    dashboard.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening site: "+ex.getMessage());
+                }
+            });
+        }
+        else if (e.getSource()==processusButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    ProcessusAdminOrganisation dashboard = new ProcessusAdminOrganisation();
+                    dashboard.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening processus: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==standardsButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    StandardAdminOrganisation dashboard = new StandardAdminOrganisation();
+                    dashboard.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening standard: "+ex.getMessage());
+                }
+            });
+        }
+        else if (e.getSource()==clausesButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    ClauseAdminOrganisation dashboard = new ClauseAdminOrganisation();
+                    dashboard.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening clause: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==actionButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    ActionAdminOrganisation actionAdminOrganisation = new ActionAdminOrganisation();
+                    actionAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening action: "+ex.getMessage());
                 }
             });
         }

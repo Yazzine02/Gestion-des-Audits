@@ -1,7 +1,7 @@
 package view;
 
-import controller.OrganisationController;
-import model.Organisation;
+import controller.ActionController;
+import model.Action;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -12,9 +12,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.LocalDate;
 import java.util.List;
 
-public class OrganisationAdminOrganisation extends JFrame implements ActionListener {
+public class ActionAdminOrganisation extends JFrame implements ActionListener {
     // Panels
     private JPanel mainPanel;
     private JPanel dashboardPanel;
@@ -34,7 +35,7 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
     private JTable table;
     private DefaultTableModel tableModel;
     // Data field
-    private List<Organisation> organisations;
+    private List<Action> actions;
     // Color Palette
     private final Color PRIMARY_COLOR = new Color(33, 150, 243); // Modern Blue
     private final Color SECONDARY_COLOR = new Color(63, 81, 181); // Deep Blue
@@ -42,8 +43,8 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
     private final Color TEXT_COLOR = Color.WHITE;
     private final Color ADD_BUTTON = new Color(15,150,43);
 
-    public OrganisationAdminOrganisation() {
-        setTitle("Organisation Admin Organisation");
+    public ActionAdminOrganisation() {
+        setTitle("Action Admin Organisation");
         setSize(1200, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -167,7 +168,7 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.setBackground(BACKGROUND_COLOR);
         // The add button
-        JButton addButton = new JButton("Add Organisation");
+        JButton addButton = new JButton("Add Processus");
         addButton.setBackground(ADD_BUTTON);
         addButton.setForeground(TEXT_COLOR);
         addButton.setFont(new Font("Arial", Font.BOLD, 14));
@@ -184,16 +185,16 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
             }
         });
         // Add action listen to add method
-        addButton.addActionListener(e -> addOrganisation());
+        addButton.addActionListener(e -> addAction());
         buttonPanel.add(addButton);
         // Add the button panel to the NORTH of the main panel
         mainPanel.add(buttonPanel, BorderLayout.NORTH);
 
         // Column names
-        String[] columnNames = {"Name", "Address","Actions"};
+        String[] columnNames = {"Name", "Description", "Date debut réelle", "Date début prévue", "Date fin Réelle", "Date fin prévue", "Responsable ID","Actions"};
 
         // Get organisations
-        organisations = OrganisationController.getAllOrganisations();
+        actions = ActionController.getAllActions();
 
         // Make the table non-editable
         tableModel = new DefaultTableModel(columnNames, 0){
@@ -205,11 +206,16 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         // Initialize JTable with the table model
         table = new JTable(tableModel);
         // Populate the table directly
-        if(!organisations.isEmpty()){
-            for(Organisation org : organisations){
+        if(!actions.isEmpty()){
+            for(Action action : actions){
                 tableModel.addRow(new Object[]{
-                        org.getName(),
-                        org.getAddress(),
+                        action.getName(),
+                        action.getDescription(),
+                        action.getDateDebutReelle(),
+                        action.getDateDebutPrevue(),
+                        action.getDateFinReelle(),
+                        action.getDateFinPrevue(),
+                        action.getResponsableId(),
                         "Actions"
                 });
             }
@@ -218,7 +224,7 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         table.setRowHeight(50);
         // Set up the Actions column with buttons
         // We will create custom buttons using the ButtonRenderer class
-        table.getColumnModel().getColumn(2).setCellRenderer(new ButtonRenderer());
+        table.getColumnModel().getColumn(7).setCellRenderer(new ActionAdminOrganisation.ButtonRenderer());
         // Adding mouse listeners
         table.addMouseListener(new MouseAdapter() {
             @Override
@@ -226,20 +232,18 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
                 int column = table.getColumnModel().getColumnIndexAtX(e.getX());
                 int row = e.getY() / table.getRowHeight();
 
-                if (row < table.getRowCount() && row >= 0 && column == 2) {
-                    // Get click coordinates inside the cell
-                    int buttonWidth = 60;
+                if (row < table.getRowCount() && row >= 0 && column == 7) {
+                    int buttonWidth = 60; // Button width assumed
                     int padding = 5;
                     int firstButtonX = (table.getColumnModel().getColumn(column).getWidth() - (2 * buttonWidth + padding)) / 2;
 
-                    // Calculate if Edit or Delete button was clicked
-                    int relativeX = e.getX() - table.getColumnModel().getColumn(column).getWidth() * 2; // Adjust for previous columns
+                    int relativeX = e.getX() - table.getColumnModel().getColumn(column).getWidth() * 7; // Adjust for previous columns
 
-                    Organisation selectedOrg = organisations.get(row);
+                    Action selectedAction = actions.get(row);
                     if (relativeX > firstButtonX && relativeX < firstButtonX + buttonWidth) {
-                        modifyOrganisation(selectedOrg, row);
+                        modifyAction(selectedAction, row);
                     } else if (relativeX > firstButtonX + buttonWidth + padding) {
-                        deleteOrganisation(selectedOrg);
+                        deleteAction(selectedAction);
                     }
                 }
             }
@@ -275,92 +279,144 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
             return this;
         }
     }
-    // Add organisation method that extends to add site
-    private void addOrganisation() {
+
+    // Add
+    private void addAction() {
         // Create custom dialog
-        JDialog dialog = new JDialog(this, "Add Organisation", true);
+        JDialog dialog = new JDialog(this, "Add Action", true);
         dialog.setLayout(new BorderLayout(10, 10));
-        dialog.setSize(400, 250); // Slightly taller to accommodate the additional button
+        dialog.setSize(400, 400); // Made taller to fit all fields
         dialog.setLocationRelativeTo(this);
 
-        // Create form panel
-        JPanel formPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        // Create form panel with more rows to accommodate all fields
+        JPanel formPanel = new JPanel(new GridLayout(7, 2, 10, 10));
         formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Add form fields
         JLabel nameLabel = new JLabel("Name:");
         JTextField nameField = new JTextField();
-        JLabel addressLabel = new JLabel("Address:");
-        JTextField addressField = new JTextField();
+        JLabel descriptionLabel = new JLabel("Description:");
+        JTextField descriptionField = new JTextField();
+        JLabel dateDebutReelleLabel = new JLabel("Date debut reelle (yyyy-MM-dd):");
+        JTextField dateDebutReelleField = new JTextField();
+        JLabel dateDebutPrevueLabel = new JLabel("Date debut prevue (yyyy-MM-dd):");
+        JTextField dateDebutPrevueField = new JTextField();
+        JLabel dateFinReelleLabel = new JLabel("Date fin reelle (yyyy-MM-dd):");
+        JTextField dateFinReelleField = new JTextField();
+        JLabel dateFinPrevueLabel = new JLabel("Date fin prevue (yyyy-MM-dd):");
+        JTextField dateFinPrevueField = new JTextField();
+        JLabel responsableIdLabel = new JLabel("Responsable ID:");
+        JTextField responsableIdField = new JTextField();
 
+        // Add all components to form panel
         formPanel.add(nameLabel);
         formPanel.add(nameField);
-        formPanel.add(addressLabel);
-        formPanel.add(addressField);
+        formPanel.add(descriptionLabel);
+        formPanel.add(descriptionField);
+        formPanel.add(dateDebutReelleLabel);
+        formPanel.add(dateDebutReelleField);
+        formPanel.add(dateDebutPrevueLabel);
+        formPanel.add(dateDebutPrevueField);
+        formPanel.add(dateFinReelleLabel);
+        formPanel.add(dateFinReelleField);
+        formPanel.add(dateFinPrevueLabel);
+        formPanel.add(dateFinPrevueField);
+        formPanel.add(responsableIdLabel);
+        formPanel.add(responsableIdField);
 
         // Create button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton confirmButton = new JButton("Confirm");
         JButton cancelButton = new JButton("Cancel");
-        JButton addSiteButton = new JButton("Add Site"); // New button for site creation
-        JButton addProcessusButton = new JButton("Add Processus"); // New button for processus creation
 
         confirmButton.setBackground(PRIMARY_COLOR);
         confirmButton.setForeground(TEXT_COLOR);
-        addSiteButton.setBackground(ADD_BUTTON);
-        addSiteButton.setForeground(TEXT_COLOR);
-        addProcessusButton.setBackground(ADD_BUTTON);
-        addProcessusButton.setForeground(TEXT_COLOR);
-
-        // Variable to store the created organisation
-        final Organisation[] createdOrganisation = new Organisation[1];
 
         // Add action listeners
         confirmButton.addActionListener(e -> {
-            String newName = nameField.getText().trim();
-            String newAddress = addressField.getText().trim();
+            try {
+                String newName = nameField.getText().trim();
+                String newDescription = descriptionField.getText().trim();
+                int newResponsableId;
 
-            if (newName.isEmpty() || newAddress.isEmpty()) {
+                // Validate empty fields
+                if (newName.isEmpty() || newDescription.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog,
+                            "Name and Description cannot be empty",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Parse and validate dates
+                LocalDate newDateDebutReelle = null;
+                LocalDate newDateDebutPrevue = null;
+                LocalDate newDateFinReelle = null;
+                LocalDate newDateFinPrevue = null;
+
+                newDateDebutReelle = LocalDate.parse(dateDebutReelleField.getText());
+                newDateDebutPrevue = LocalDate.parse(dateDebutPrevueField.getText());
+                newDateFinReelle = LocalDate.parse(dateFinReelleField.getText());
+                newDateFinPrevue = LocalDate.parse(dateFinPrevueField.getText());
+
+                // Parse and validate responsableId
+                try {
+                    newResponsableId = Integer.parseInt(responsableIdField.getText());
+                    if (newResponsableId <= 0) {
+                        throw new NumberFormatException();
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(dialog,
+                            "Please enter a valid positive integer for Responsable ID",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Create and add the action
+                Action action = new Action(
+                        newName,
+                        newDescription,
+                        newDateDebutReelle,
+                        newDateDebutPrevue,
+                        newDateFinReelle,
+                        newDateFinPrevue,
+                        newResponsableId
+                );
+
+                ActionController.addAction(action);
+                actions.add(action);
+
+                // Update the table model with the new action
+                tableModel.addRow(new Object[]{
+                        action.getName(),
+                        action.getDescription(),
+                        action.getDateDebutReelle(),
+                        action.getDateDebutPrevue(),
+                        action.getDateFinReelle(),
+                        action.getDateFinPrevue(),
+                        action.getResponsableId(),
+                        "Actions"
+                });
+
+                // Show success message and close dialog
                 JOptionPane.showMessageDialog(dialog,
-                        "Name and address cannot be empty",
+                        "Action created successfully!",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+                dialog.dispose();
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog,
+                        "Error creating action: " + ex.getMessage(),
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
-                return;
             }
-
-            // Adding organisation
-            Organisation organisation = new Organisation(newName, newAddress);
-            OrganisationController.addOrganisation(organisation);
-
-            organisations.add(organisation);
-            tableModel.addRow(new Object[]{organisation.getId(), organisation.getName(), organisation.getAddress(), "Actions"});
-
-            // Store the created organisation for potential site creation
-            createdOrganisation[0] = organisation;
-
-            // Show success message
-            JOptionPane.showMessageDialog(dialog,
-                    "Organisation created successfully! You can add a site or a processus if needed.",
-                    "Success",
-                    JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        addSiteButton.addActionListener(e -> {
-            // Open the site creation window from SiteAdminOrganisation
-            SiteAdminOrganisation siteAdmin = new SiteAdminOrganisation();
-            siteAdmin.addSite();
-        });
-
-        addProcessusButton.addActionListener(e->{
-            // Open the processus creation window
-            ProcessusAdminOrganisation processusAdmin = new ProcessusAdminOrganisation();
-            processusAdmin.addProcessus();
         });
 
         cancelButton.addActionListener(e -> dialog.dispose());
 
-        buttonPanel.add(addSiteButton);
-        buttonPanel.add(addProcessusButton);
+        // Add buttons to panel
         buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
 
@@ -372,9 +428,9 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
     }
 
     // Modify method
-    private void modifyOrganisation(Organisation org, int row){
+    private void modifyAction(Action action, int row) {
         // Create custom dialog
-        JDialog dialog = new JDialog(this, "Edit Organisation", true);
+        JDialog dialog = new JDialog(this, "Edit Action", true);
         dialog.setLayout(new BorderLayout(10, 10));
         dialog.setSize(400, 200);
         dialog.setLocationRelativeTo(this);
@@ -385,14 +441,35 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
 
         // Add form fields
         JLabel nameLabel = new JLabel("Name:");
-        JTextField nameField = new JTextField(org.getName());
-        JLabel addressLabel = new JLabel("Address:");
-        JTextField addressField = new JTextField(org.getAddress());
+        JTextField nameField = new JTextField();
+        JLabel descriptionLabel = new JLabel("Description:");
+        JTextField descriptionField = new JTextField();
+        JLabel dateDebutReelleLabel = new JLabel("Date debut reelle (yyyy-MM-dd):");
+        JTextField dateDebutReelleField = new JTextField();
+        JLabel dateDebutPrevueLabel = new JLabel("Date debut prevue (yyyy-MM-dd):");
+        JTextField dateDebutPrevueField = new JTextField();
+        JLabel dateFinReelleLabel = new JLabel("Date fin reelle (yyyy-MM-dd):");
+        JTextField dateFinReelleField = new JTextField();
+        JLabel dateFinPrevueLabel = new JLabel("Date fin prevue (yyyy-MM-dd):");
+        JTextField dateFinPrevueField = new JTextField();
+        JLabel responsableIdLabel = new JLabel("Responsable ID:");
+        JTextField responsableIdField = new JTextField();
 
+        // Add all components to form panel
         formPanel.add(nameLabel);
         formPanel.add(nameField);
-        formPanel.add(addressLabel);
-        formPanel.add(addressField);
+        formPanel.add(descriptionLabel);
+        formPanel.add(descriptionField);
+        formPanel.add(dateDebutReelleLabel);
+        formPanel.add(dateDebutReelleField);
+        formPanel.add(dateDebutPrevueLabel);
+        formPanel.add(dateDebutPrevueField);
+        formPanel.add(dateFinReelleLabel);
+        formPanel.add(dateFinReelleField);
+        formPanel.add(dateFinPrevueLabel);
+        formPanel.add(dateFinPrevueField);
+        formPanel.add(responsableIdLabel);
+        formPanel.add(responsableIdField);
 
         // Create button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -405,24 +482,25 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
         // Add action listeners
         confirmButton.addActionListener(e -> {
             String newName = nameField.getText().trim();
-            String newAddress = addressField.getText().trim();
+            String newDescription = descriptionField.getText().trim();
 
-            if (newName.isEmpty() || newAddress.isEmpty()) {
+
+            if (newName.isEmpty() || newDescription.isEmpty()) {
                 JOptionPane.showMessageDialog(dialog,
-                        "Name and address cannot be empty",
+                        "Name and description cannot be empty",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // Update organisation
-            org.setName(newName);
-            org.setAddress(newAddress);
-            OrganisationController.updateOrganisation(org.getId(), org.getName(), org.getAddress());
+            // Update action
+            action.setName(newName);
+            action.setDescription(newDescription);
+            ActionController.updateAction(action.getId(), action.getName(), action.getDescription(), action.getDateDebutReelle(), action.getDateDebutPrevue(), action.getDateFinReelle(), action.getDateFinPrevue(), action.getResponsableId());
 
             // Update table
             tableModel.setValueAt(newName, row, 1);
-            tableModel.setValueAt(newAddress, row, 2);
+            tableModel.setValueAt(newDescription, row, 2);
 
             dialog.dispose();
         });
@@ -438,17 +516,25 @@ public class OrganisationAdminOrganisation extends JFrame implements ActionListe
 
         dialog.setVisible(true);
     }
-    // Remove method
-    private void deleteOrganisation(Organisation org){
-        // JOptionPan.YES_NO_OPTION is an integer
-        int confirm = JOptionPane.showConfirmDialog(this,"Are you sure you want to delete "+org.getName()+"?","Confirm",JOptionPane.YES_NO_OPTION);
-        if(confirm == JOptionPane.YES_OPTION) {
-            // Remove using the controller
-            OrganisationController.deleteOrganisation(org.getId());
-            tableModel.removeRow(organisations.indexOf(org));
-            organisations.remove(org);
+
+    // Delete method
+    private void deleteAction(Action action) {
+        int result = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to delete this action?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION);
+        if (result == JOptionPane.YES_OPTION) {
+            // Remove from the database
+            ActionController.deleteAction(action.getId());
+
+            // Remove from local list and update table
+            actions.remove(action);
+            tableModel.removeRow(actions.indexOf(action));
+
+            JOptionPane.showMessageDialog(this, "Action deleted successfully.");
         }
     }
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
