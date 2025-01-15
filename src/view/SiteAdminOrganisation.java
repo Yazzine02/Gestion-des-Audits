@@ -297,12 +297,12 @@ public class SiteAdminOrganisation extends JFrame implements ActionListener {
         JLabel nameLabel = new JLabel("Name:");
         JTextField nameField = new JTextField();
 
-        formPanel.add(adresseField);
         formPanel.add(adresseLabel);
-        formPanel.add(descriptionField);
+        formPanel.add(adresseField);
         formPanel.add(descriptionLabel);
-        formPanel.add(nameField);
+        formPanel.add(descriptionField);
         formPanel.add(nameLabel);
+        formPanel.add(nameField);
 
         // Create button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -331,7 +331,7 @@ public class SiteAdminOrganisation extends JFrame implements ActionListener {
             SiteController.addSite(site);
 
             sites.add(site);
-            tableModel.addRow(new Object[]{site.getId(),site.getAdresse(),site.getDescription(), site.getName(), "Actions"});
+            tableModel.addRow(new Object[]{site.getAdresse(),site.getDescription(), site.getName(), "Actions"});
 
             dialog.dispose();
         });
@@ -404,8 +404,9 @@ public class SiteAdminOrganisation extends JFrame implements ActionListener {
             SiteController.updateSite(site.getId(),site.getAdresse(),site.getDescription(),site.getName());
 
             // Update table
-            tableModel.setValueAt(newName, row, 1);
-            tableModel.setValueAt(newAddress, row, 2);
+            tableModel.setValueAt(newAddress, row, 0);
+            tableModel.setValueAt(newDescription, row, 1);
+            tableModel.setValueAt(newName, row, 2);
 
             dialog.dispose();
         });
@@ -514,6 +515,45 @@ public class SiteAdminOrganisation extends JFrame implements ActionListener {
                 }catch(Exception ex){
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Error opening action: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==correctionButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    CorrectionAdminOrganisation correctionAdminOrganisation = new CorrectionAdminOrganisation();
+                    correctionAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening correction: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==auditButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    AuditAdminOrganisation auditAdminOrganisation = new AuditAdminOrganisation();
+                    auditAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening audit: "+ex.getMessage());
+                }
+            });
+        }
+        else if (e.getSource()==systemeDeManagementButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    SystemeDeManagementAdminOrganisation systemeDeManagementAdminOrganisation = new SystemeDeManagementAdminOrganisation();
+                    systemeDeManagementAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening systeme de management: "+ex.getMessage());
                 }
             });
         }

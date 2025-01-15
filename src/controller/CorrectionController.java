@@ -12,10 +12,10 @@ import java.util.List;
 public class CorrectionController {
     private static String ORGANISATION_FILE_PATH = "src/database/corrections.txt";
     // Add organisation
-    public static boolean addCorrection(Correction organisation) {
+    public static boolean addCorrection(Correction correction) {
         // OPEN FILE IN WRITE APPEND MODE
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(ORGANISATION_FILE_PATH, true))) {
-            writer.write(organisation.writeOrganisation());
+            writer.write(correction.writeCorrection());
             writer.newLine();
             return true;
         }catch(Exception e) {
@@ -30,7 +30,7 @@ public class CorrectionController {
             String line;
             while((line= reader.readLine())!=null){
                 String[] tokens = line.split("#");
-                if(tokens.length==3){
+                if(tokens.length==4){
                     Correction correction = new Correction(Integer.parseInt(tokens[0]), tokens[1], tokens[2], Integer.parseInt(tokens[3]));
                     corrections.add(correction);
                 }
@@ -49,6 +49,7 @@ public class CorrectionController {
                 if(correction.getId()==id){
                     correction.setName(name);
                     correction.setDescription(description);
+                    correction.setResponsableId(responsableId);
                     writer.write(correction.writeCorrection());
                     writer.newLine();
                 }

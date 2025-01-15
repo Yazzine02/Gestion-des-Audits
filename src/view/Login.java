@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import static controller.UserCredentialManager.verifyLogin;
 
 public class Login extends JFrame implements ActionListener {
+
     JPanel panel;
     JLabel userLabel, passwordLabel, authenticationMessage;
     JTextField usernameField;
@@ -51,7 +52,7 @@ public class Login extends JFrame implements ActionListener {
         if(e.getSource() == loginButton){
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
-            if(verifyLogin(username, password)){
+            if(verifyLogin(username, password)=="admin"){
                 // Should add how to get role of the user then display the correct screen
                 authenticationMessage.setText("Login Successful");
                 authenticationMessage.setForeground(Color.GREEN);
@@ -69,6 +70,23 @@ public class Login extends JFrame implements ActionListener {
                        ex.printStackTrace();
                        JOptionPane.showMessageDialog(null, "Error opening dashboard: "+ex.getMessage()+" Dashboard error");
                    }
+                });
+            }
+            else if(verifyLogin(username, password)=="user"){
+                authenticationMessage.setText("Login Successful");
+                authenticationMessage.setForeground(Color.GREEN);
+                this.dispose();
+                SwingUtilities.invokeLater(()->{
+                    try{
+                        // Make the system lookandfeel stay consistent throughout the app
+                        UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                        // Create and show dashboard
+                        AuditAuditeur dashboard = new AuditAuditeur();
+                        dashboard.setVisible(true);
+                    }catch(Exception ex){
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Error opening dashboard: "+ex.getMessage()+" Dashboard error");
+                    }
                 });
             }
             else{

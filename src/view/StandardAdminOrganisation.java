@@ -304,9 +304,12 @@ public class StandardAdminOrganisation extends JFrame implements ActionListener 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton confirmButton = new JButton("Confirm");
         JButton cancelButton = new JButton("Cancel");
+        JButton addClauseButton = new JButton("Add Clause");
 
         confirmButton.setBackground(PRIMARY_COLOR);
         confirmButton.setForeground(TEXT_COLOR);
+        addClauseButton.setBackground(ADD_BUTTON);
+        addClauseButton.setForeground(TEXT_COLOR);
 
         // Add action listeners
         confirmButton.addActionListener(e -> {
@@ -326,15 +329,21 @@ public class StandardAdminOrganisation extends JFrame implements ActionListener 
             StandardController.addStandard(standard);
 
             standards.add(standard);
-            tableModel.addRow(new Object[]{standard.getId(),standard.getDescription(),standard.getReference(), "Actions"});
+            tableModel.addRow(new Object[]{standard.getDescription(),standard.getReference(), "Actions"});
 
             dialog.dispose();
+        });
+
+        addClauseButton.addActionListener(e -> {
+            ClauseAdminOrganisation clauseAdminOrganisation = new ClauseAdminOrganisation();
+            clauseAdminOrganisation.addClause();
         });
 
         cancelButton.addActionListener(e -> dialog.dispose());
 
         buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
+        buttonPanel.add(addClauseButton);
 
         // Add panels to dialog
         dialog.add(formPanel, BorderLayout.CENTER);
@@ -357,9 +366,9 @@ public class StandardAdminOrganisation extends JFrame implements ActionListener 
 
         // Add form fields
         JLabel descriptionLabel = new JLabel("Description:");
-        JTextField descriptionField = new JTextField();
+        JTextField descriptionField = new JTextField(standard.getDescription());
         JLabel referenceLabel = new JLabel("Reference:");
-        JTextField referenceField = new JTextField();
+        JTextField referenceField = new JTextField(standard.getReference());
 
         formPanel.add(descriptionLabel);
         formPanel.add(descriptionField);
@@ -393,8 +402,8 @@ public class StandardAdminOrganisation extends JFrame implements ActionListener 
             StandardController.updateStandard(standard.getId(),standard.getDescription(),standard.getReference());
 
             // Update table
-            tableModel.setValueAt(newDescription, row, 1);
-            tableModel.setValueAt(newReference, row, 2);
+            tableModel.setValueAt(newDescription, row, 0);
+            tableModel.setValueAt(newReference, row, 1);
 
             dialog.dispose();
         });
@@ -503,6 +512,45 @@ public class StandardAdminOrganisation extends JFrame implements ActionListener 
                 }catch(Exception ex){
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Error opening action: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==correctionButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    CorrectionAdminOrganisation correctionAdminOrganisation = new CorrectionAdminOrganisation();
+                    correctionAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening correction: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==auditButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    AuditAdminOrganisation auditAdminOrganisation = new AuditAdminOrganisation();
+                    auditAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening audit: "+ex.getMessage());
+                }
+            });
+        }
+        else if (e.getSource()==systemeDeManagementButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    SystemeDeManagementAdminOrganisation systemeDeManagementAdminOrganisation = new SystemeDeManagementAdminOrganisation();
+                    systemeDeManagementAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening systeme de management: "+ex.getMessage());
                 }
             });
         }

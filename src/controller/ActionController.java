@@ -1,7 +1,6 @@
 package controller;
 
 import model.Action;
-import model.Organisation;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -10,7 +9,6 @@ import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class ActionController {

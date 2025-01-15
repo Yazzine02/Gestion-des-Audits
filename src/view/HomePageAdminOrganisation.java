@@ -245,5 +245,44 @@ public class HomePageAdminOrganisation extends JFrame implements ActionListener 
                 }
             });
         }
+        else if(e.getSource()==correctionButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    CorrectionAdminOrganisation correctionAdminOrganisation = new CorrectionAdminOrganisation();
+                    correctionAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening correction: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==auditButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    AuditAdminOrganisation auditAdminOrganisation = new AuditAdminOrganisation();
+                    auditAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening audit: "+ex.getMessage());
+                }
+            });
+        }
+        else if (e.getSource()==systemeDeManagementButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    SystemeDeManagementAdminOrganisation systemeDeManagementAdminOrganisation = new SystemeDeManagementAdminOrganisation();
+                    systemeDeManagementAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening systeme de management: "+ex.getMessage());
+                }
+            });
+        }
     }
 }

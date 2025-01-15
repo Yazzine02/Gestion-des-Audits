@@ -281,7 +281,7 @@ public class ClauseAdminOrganisation extends JFrame implements ActionListener {
         }
     }
     // Add method
-    private void addClause() {
+    void addClause() {
         // Create custom dialog
         JDialog dialog = new JDialog(this, "Add Clause", true);
         dialog.setLayout(new BorderLayout(10, 10));
@@ -329,7 +329,7 @@ public class ClauseAdminOrganisation extends JFrame implements ActionListener {
             ClauseController.addClause(clause);
 
             clauses.add(clause);
-            tableModel.addRow(new Object[]{clause.getId(),clause.getDescription(),clause.getReference(), "Actions"});
+            tableModel.addRow(new Object[]{clause.getDescription(),clause.getReference(), "Actions"});
 
             dialog.dispose();
         });
@@ -360,9 +360,9 @@ public class ClauseAdminOrganisation extends JFrame implements ActionListener {
 
         // Add form fields
         JLabel descriptionLabel = new JLabel("Description:");
-        JTextField descriptionField = new JTextField();
+        JTextField descriptionField = new JTextField(clause.getDescription());
         JLabel referenceLabel = new JLabel("Reference:");
-        JTextField referenceField = new JTextField();
+        JTextField referenceField = new JTextField(clause.getReference());
 
         formPanel.add(descriptionLabel);
         formPanel.add(descriptionField);
@@ -396,8 +396,8 @@ public class ClauseAdminOrganisation extends JFrame implements ActionListener {
             StandardController.updateStandard(clause.getId(),clause.getDescription(),clause.getReference());
 
             // Update table
-            tableModel.setValueAt(newDescription, row, 1);
-            tableModel.setValueAt(newReference, row, 2);
+            tableModel.setValueAt(newDescription, row, 0);
+            tableModel.setValueAt(newReference, row, 1);
 
             dialog.dispose();
         });
@@ -506,6 +506,45 @@ public class ClauseAdminOrganisation extends JFrame implements ActionListener {
                 }catch(Exception ex){
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Error opening action: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==correctionButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    CorrectionAdminOrganisation correctionAdminOrganisation = new CorrectionAdminOrganisation();
+                    correctionAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening correction: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==auditButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    AuditAdminOrganisation auditAdminOrganisation = new AuditAdminOrganisation();
+                    auditAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening audit: "+ex.getMessage());
+                }
+            });
+        }
+        else if (e.getSource()==systemeDeManagementButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    SystemeDeManagementAdminOrganisation systemeDeManagementAdminOrganisation = new SystemeDeManagementAdminOrganisation();
+                    systemeDeManagementAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening systeme de management: "+ex.getMessage());
                 }
             });
         }

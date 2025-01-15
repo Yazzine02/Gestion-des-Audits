@@ -26,7 +26,7 @@ public class UserCredentialManager {
         }
     }
 
-    public static boolean verifyLogin(String username, String password) {
+    public static String verifyLogin(String username, String password) {
         try{
             String hashedPassword = hashPassword(password);
             try(BufferedReader reader = new BufferedReader(new FileReader(CREDENTIALS_FILE_PATH))){
@@ -34,14 +34,14 @@ public class UserCredentialManager {
                 while( (line=reader.readLine()) != null){
                     String[] tokens = line.split("#");
                     if(tokens.length == 4 && tokens[1].equals(username) && tokens[2].equals(hashedPassword)){
-                        return true;
+                        if(tokens[3].equals("admin"))return "admin";
+                        else return "user";
                     }
                 }
             }
-            return false;
         } catch(IOException e){
             e.printStackTrace();
-            return false;
         }
+        return "error";
     }
 }

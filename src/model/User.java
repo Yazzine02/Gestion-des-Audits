@@ -5,9 +5,4 @@ public class User {
     private String username;
     private String password;
     private String role;
-//    private String domain;
-//    private String email;
-//    private String googleId;
-//    private String name;
-//    private String uid;
 }

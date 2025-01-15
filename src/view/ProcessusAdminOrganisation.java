@@ -336,7 +336,7 @@ public class ProcessusAdminOrganisation extends JFrame implements ActionListener
             ProcessusController.addProcessus(processus1);
 
             processus.add(processus1);
-            tableModel.addRow(new Object[]{processus1.getId(),processus1.getDescription(),processus1.getName(), processus1.getOrganisationId(), processus1.getResponsableId(), "Actions"});
+            tableModel.addRow(new Object[]{processus1.getDescription(),processus1.getName(), processus1.getOrganisationId(), processus1.getResponsableId(), "Actions"});
 
             dialog.dispose();
         });
@@ -367,13 +367,13 @@ public class ProcessusAdminOrganisation extends JFrame implements ActionListener
 
         // Add form fields
         JLabel descriptionLabel = new JLabel("Description:");
-        JTextField descriptionField = new JTextField();
+        JTextField descriptionField = new JTextField(processus1.getDescription());
         JLabel nameLabel = new JLabel("Name:");
-        JTextField nameField = new JTextField();
+        JTextField nameField = new JTextField(processus1.getName());
         JLabel organisationIDLabel = new JLabel("Organisation ID:");
-        JTextField organisationIDField = new JTextField();
+        JTextField organisationIDField = new JTextField(processus1.getOrganisationId());
         JLabel responsableIDLabel = new JLabel("Responsable ID:");
-        JTextField responsableIdField = new JTextField();
+        JTextField responsableIdField = new JTextField(processus1.getResponsableId());
 
         formPanel.add(descriptionLabel);
         formPanel.add(descriptionField);
@@ -415,10 +415,10 @@ public class ProcessusAdminOrganisation extends JFrame implements ActionListener
             ProcessusController.updateProcessus(processus1.getId(),processus1.getDescription(),processus1.getName(),processus1.getOrganisationId(), processus1.getResponsableId());
 
             // Update table
-            tableModel.setValueAt(newDescription, row, 1);
-            tableModel.setValueAt(newName, row, 2);
-            tableModel.setValueAt(newOrganisationID, row, 3);
-            tableModel.setValueAt(newResponsableID, row, 4);
+            tableModel.setValueAt(newDescription, row, 0);
+            tableModel.setValueAt(newName, row, 1);
+            tableModel.setValueAt(newOrganisationID, row, 2);
+            tableModel.setValueAt(newResponsableID, row, 3);
 
             dialog.dispose();
         });
@@ -527,6 +527,45 @@ public class ProcessusAdminOrganisation extends JFrame implements ActionListener
                 }catch(Exception ex){
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Error opening action: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==correctionButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    CorrectionAdminOrganisation correctionAdminOrganisation = new CorrectionAdminOrganisation();
+                    correctionAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening correction: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==auditButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    AuditAdminOrganisation auditAdminOrganisation = new AuditAdminOrganisation();
+                    auditAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening audit: "+ex.getMessage());
+                }
+            });
+        }
+        else if (e.getSource()==systemeDeManagementButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    SystemeDeManagementAdminOrganisation systemeDeManagementAdminOrganisation = new SystemeDeManagementAdminOrganisation();
+                    systemeDeManagementAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening systeme de management: "+ex.getMessage());
                 }
             });
         }

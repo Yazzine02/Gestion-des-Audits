@@ -221,7 +221,7 @@ public class CorrectionAdminOrganisation extends JFrame implements ActionListene
         table.setRowHeight(50);
         // Set up the Actions column with buttons
         // We will create custom buttons using the ButtonRenderer class
-        table.getColumnModel().getColumn(2).setCellRenderer(new CorrectionAdminOrganisation.ButtonRenderer());
+        table.getColumnModel().getColumn(3).setCellRenderer(new CorrectionAdminOrganisation.ButtonRenderer());
         // Adding mouse listeners
         table.addMouseListener(new MouseAdapter() {
             @Override
@@ -229,20 +229,20 @@ public class CorrectionAdminOrganisation extends JFrame implements ActionListene
                 int column = table.getColumnModel().getColumnIndexAtX(e.getX());
                 int row = e.getY() / table.getRowHeight();
 
-                if (row < table.getRowCount() && row >= 0 && column == 2) {
+                if (row < table.getRowCount() && row >= 0 && column == 3) {
                     // Get click coordinates inside the cell
                     int buttonWidth = 60;
                     int padding = 5;
                     int firstButtonX = (table.getColumnModel().getColumn(column).getWidth() - (2 * buttonWidth + padding)) / 2;
 
                     // Calculate if Edit or Delete button was clicked
-                    int relativeX = e.getX() - table.getColumnModel().getColumn(column).getWidth() * 2; // Adjust for previous columns
+                    int relativeX = e.getX() - table.getColumnModel().getColumn(column).getWidth() * 3; // Adjust for previous columns
 
                     Correction selectedCorrection = corrections.get(row);
                     if (relativeX > firstButtonX && relativeX < firstButtonX + buttonWidth) {
-                        modifyOrganisation(selectedCorrection, row);
+                        modifyCorrection(selectedCorrection, row);
                     } else if (relativeX > firstButtonX + buttonWidth + padding) {
-                        deleteOrganisation(selectedCorrection);
+                        deleteCorrection(selectedCorrection);
                     }
                 }
             }
@@ -324,7 +324,7 @@ public class CorrectionAdminOrganisation extends JFrame implements ActionListene
 
             if (newName.isEmpty() || newDescription.isEmpty()) {
                 JOptionPane.showMessageDialog(dialog,
-                        "Name and address cannot be empty",
+                        "Name and description cannot be empty",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
@@ -335,11 +335,11 @@ public class CorrectionAdminOrganisation extends JFrame implements ActionListene
             CorrectionController.addCorrection(correction);
 
             corrections.add(correction);
-            tableModel.addRow(new Object[]{correction.getId(), correction.getName(), correction.getResponsableId(), "Actions"});
+            tableModel.addRow(new Object[]{correction.getName(), correction.getDescription(), correction.getResponsableId(), "Actions"});
 
             // Show success message
             JOptionPane.showMessageDialog(dialog,
-                    "Correction created successfully! You can add a site or a processus if needed.",
+                    "Correction created successfully!",
                     "Success",
                     JOptionPane.INFORMATION_MESSAGE);
         });
@@ -357,7 +357,7 @@ public class CorrectionAdminOrganisation extends JFrame implements ActionListene
     }
 
     // Modify method
-    private void modifyCorrection(Correction org, int row){
+    private void modifyCorrection(Correction correction, int row){
         // Create custom dialog
         JDialog dialog = new JDialog(this, "Edit Correction", true);
         dialog.setLayout(new BorderLayout(10, 10));
@@ -370,14 +370,18 @@ public class CorrectionAdminOrganisation extends JFrame implements ActionListene
 
         // Add form fields
         JLabel nameLabel = new JLabel("Name:");
-        JTextField nameField = new JTextField(org.getName());
-        JLabel addressLabel = new JLabel("Address:");
-        JTextField addressField = new JTextField(org.getAddress());
+        JTextField nameField = new JTextField(correction.getName());
+        JLabel descriptionLabel = new JLabel("Description:");
+        JTextField descriptionField = new JTextField(correction.getDescription());
+        JLabel responsableIdLabel = new JLabel("Responsable ID:");
+        JTextField responsableField = new JTextField(String.valueOf(correction.getResponsableId()));
 
         formPanel.add(nameLabel);
         formPanel.add(nameField);
-        formPanel.add(addressLabel);
-        formPanel.add(addressField);
+        formPanel.add(descriptionLabel);
+        formPanel.add(descriptionField);
+        formPanel.add(responsableIdLabel);
+        formPanel.add(responsableField);
 
         // Create button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -390,24 +394,27 @@ public class CorrectionAdminOrganisation extends JFrame implements ActionListene
         // Add action listeners
         confirmButton.addActionListener(e -> {
             String newName = nameField.getText().trim();
-            String newAddress = addressField.getText().trim();
+            String newDescription = descriptionField.getText().trim();
+            int newResponsableId = Integer.parseInt(responsableField.getText().trim());
 
-            if (newName.isEmpty() || newAddress.isEmpty()) {
+            if (newName.isEmpty() || newDescription.isEmpty() || newResponsableId < 0) {
                 JOptionPane.showMessageDialog(dialog,
-                        "Name and address cannot be empty",
+                        "Name and Description cannot be empty. Responsable ID has to be a positive integer",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             // Update organisation
-            org.setName(newName);
-            org.setAddress(newAddress);
-            OrganisationController.updateOrganisation(org.getId(), org.getName(), org.getAddress());
+            correction.setName(newName);
+            correction.setDescription(newDescription);
+            correction.setResponsableId(newResponsableId);
+            CorrectionController.updateCorrection(correction.getId(), correction.getName(), correction.getDescription(), correction.getResponsableId());
 
             // Update table
-            tableModel.setValueAt(newName, row, 1);
-            tableModel.setValueAt(newAddress, row, 2);
+            tableModel.setValueAt(newName, row, 0);
+            tableModel.setValueAt(newDescription, row, 1);
+            tableModel.setValueAt(newResponsableId, row, 2);
 
             dialog.dispose();
         });
@@ -424,14 +431,14 @@ public class CorrectionAdminOrganisation extends JFrame implements ActionListene
         dialog.setVisible(true);
     }
     // Remove method
-    private void deleteOrganisation(Correction org){
+    private void deleteCorrection(Correction correction){
         // JOptionPan.YES_NO_OPTION is an integer
-        int confirm = JOptionPane.showConfirmDialog(this,"Are you sure you want to delete "+org.getName()+"?","Confirm",JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this,"Are you sure you want to delete "+correction.getName()+"?","Confirm",JOptionPane.YES_NO_OPTION);
         if(confirm == JOptionPane.YES_OPTION) {
             // Remove using the controller
-            OrganisationController.deleteOrganisation(org.getId());
-            tableModel.removeRow(organisations.indexOf(org));
-            organisations.remove(org);
+            CorrectionController.deleteCorrection(correction.getId());
+            tableModel.removeRow(corrections.indexOf(correction));
+            corrections.remove(correction);
         }
     }
 
@@ -516,6 +523,45 @@ public class CorrectionAdminOrganisation extends JFrame implements ActionListene
                 }catch(Exception ex){
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Error opening action: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==correctionButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    CorrectionAdminOrganisation correctionAdminOrganisation = new CorrectionAdminOrganisation();
+                    correctionAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening correction: "+ex.getMessage());
+                }
+            });
+        }
+        else if(e.getSource()==auditButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    AuditAdminOrganisation auditAdminOrganisation = new AuditAdminOrganisation();
+                    auditAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening audit: "+ex.getMessage());
+                }
+            });
+        }
+        else if (e.getSource()==systemeDeManagementButton){
+            this.dispose();
+            SwingUtilities.invokeLater(()->{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+                    SystemeDeManagementAdminOrganisation systemeDeManagementAdminOrganisation = new SystemeDeManagementAdminOrganisation();
+                    systemeDeManagementAdminOrganisation.setVisible(true);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error opening systeme de management: "+ex.getMessage());
                 }
             });
         }
