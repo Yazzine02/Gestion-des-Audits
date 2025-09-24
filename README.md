@@ -30,6 +30,6 @@ This system emphasizes **security**, **usability**, and **robust authentication*
 ---
 ## Screenshots
 # login
-![alt text]("Login")
+![alt text](https://github.com/Yazzine02/Gestion-des-Audits/blob/master/screenshots/login.png "Login")
 # HomePage
-![alt text]("HomePage")
+![alt text](https://github.com/Yazzine02/Gestion-des-Audits/blob/master/screenshots/home.png "HomePage")
